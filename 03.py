@@ -8,7 +8,7 @@ def mul(x, y):
 
 def main():
     with open("data/03.txt") as file:
-        instruction = "".join(l[:-1] for l in file.readlines())
+        instruction = "".join(file.read().splitlines())
 
     matches = MUL_PATTERN.findall(instruction)
     total = sum(eval(m) for m in matches)
