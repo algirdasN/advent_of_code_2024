@@ -1,18 +1,13 @@
-import numpy as np
-
 def check_report(report, tolerance = False):
-    sign = np.sign(report[-1] - report[0])
+    sign = 1 if report[-1] > report[0] else -1
     for i in range(len(report) - 1):
         diff = report[i + 1] - report[i]
         if not 1 <= sign * diff <= 3:
             if tolerance:
-                return any(
-                    check_report(report[:j] + report[j + 1:]) for j in range(len(report))
-                )
+                return check_report(report[:i] + report[i + 1:]) or check_report(report[:i + 1] + report[i + 2:])
             else:
                 return False
-    else:
-        return True
+    return True
 
 def main():
     with open("data/02.txt") as file:
