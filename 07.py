@@ -42,9 +42,11 @@ def main():
                 break
         else:
             op_adv_combinations = product(OPERATORS_ADV, repeat=len(arguments) - 1)
-            op_adv_combinations = [x for x in op_adv_combinations if "||" in x]
 
             for op in op_adv_combinations:
+                if "||" not in op:
+                    continue
+
                 if check_expression(arguments, op, result):
                     total_adv += result
                     break
