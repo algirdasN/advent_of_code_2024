@@ -1,5 +1,6 @@
 import heapq
 import sys
+from collections import deque
 
 DIRS = [
     (-1, 0),
@@ -32,6 +33,12 @@ def add_to_heap(node_map, heap, coordinates, direction, distance):
         heapq.heappush(heap, next_node)
 
     return next_node.min_dist(distance)
+
+
+def walk_back(node_map, node_queue, coordinates, direction, distance):
+    prev_node = node_map[coordinates][direction]
+    if prev_node.dist == distance:
+        node_queue.append(prev_node)
 
 
 def main():
@@ -73,7 +80,28 @@ def main():
         if update:
             heapq.heapify(heap)
 
-    print(min(x.dist for x in node_map[end].values()))
+    min_dist = min(x.dist for x in node_map[end].values())
+    print(min_dist)
+
+    visited = set()
+    node_queue = deque(x for x in node_map[end].values() if x.dist == min_dist)
+
+    while node_queue:
+        curr = node_queue.pop()
+        visited.add(curr.xy)
+
+        if curr.xy == start:
+            continue
+
+        walk_back(node_map, node_queue, (curr.xy[0] - curr.d[0], curr.xy[1] - curr.d[1]), curr.d, curr.dist - 1)
+
+        right_dir = DIRS[(DIRS.index(curr.d) + 1) % 4]
+        left_dir = DIRS[(DIRS.index(curr.d) + 3) % 4]
+
+        walk_back(node_map, node_queue, curr.xy, right_dir, curr.dist - 1000)
+        walk_back(node_map, node_queue, curr.xy, left_dir, curr.dist - 1000)
+
+    print(len(visited))
 
 
 if __name__ == "__main__":
