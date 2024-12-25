@@ -28,7 +28,7 @@ def calculate_cheats(grid_map, path, len_x, len_y, max_cheat_length, save_cutoff
 
 
 def main():
-    with open("data/19.txt") as file:
+    with open("data/20.txt") as file:
         grid = file.read().splitlines()
 
     len_x = len(grid)
