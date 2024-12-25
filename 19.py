@@ -1,3 +1,5 @@
+from itertools import count
+
 DIRS = [
     (-1, 0),
     (0, 1),
@@ -24,10 +26,13 @@ def main():
                 end = (i, j)
 
     curr = start
-    path = []
+    path = {}
 
-    while curr != end:
-        path.append(curr)
+    for i in count():
+        path[curr] = i
+
+        if curr == end:
+            break
 
         for d in DIRS:
             next_cell = curr[0] + d[0], curr[1] + d[1]
@@ -35,11 +40,8 @@ def main():
                 curr = next_cell
                 break
 
-    path.append(end)
-
     total = 0
-    for i in range(len(path)):
-        jump_from = path[i]
+    for jump_from in path:
         for d in DIRS:
             skip_cell = jump_from[0] + d[0], jump_from[1] + d[1]
             if grid_map[skip_cell] != WALL:
@@ -48,7 +50,7 @@ def main():
             jump_to = jump_from[0] + 2 * d[0], jump_from[1] + 2 * d[1]
             if 0 <= jump_to[0] < len(grid) and 0 <= jump_to[1] < len(grid[0]) \
                     and grid_map[jump_to] != WALL \
-                    and path.index(jump_to) - i - 2 >= 100:
+                    and path[jump_to] - path[jump_from] - 2 >= 100:
                 total += 1
 
     print(total)
