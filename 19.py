@@ -10,19 +10,19 @@ DIRS = [
 WALL = "#"
 
 
-def calculate_cheats(grid_map, path, len_x, len_y, cheat_length, save_cutoff):
+def calculate_cheats(grid_map, path, len_x, len_y, max_cheat_length, save_cutoff):
     total = 0
-    for jump_from in path:
-        for d in DIRS:
-            skip_cell = jump_from[0] + d[0], jump_from[1] + d[1]
-            if grid_map[skip_cell] != WALL:
-                continue
 
-            jump_to = jump_from[0] + 2 * d[0], jump_from[1] + 2 * d[1]
-            if 0 <= jump_to[0] < len_x and 0 <= jump_to[1] < len_y \
-                    and grid_map[jump_to] != WALL \
-                    and path[jump_to] - path[jump_from] - cheat_length >= save_cutoff:
-                total += 1
+    for jump_from in path:
+        for i in range(-max_cheat_length, max_cheat_length + 1):
+            for j in range(-max_cheat_length + abs(i), max_cheat_length + 1 - abs(i)):
+                jump_to = jump_from[0] + i, jump_from[1] + j
+                cheat_length = (abs(i) + abs(j))
+
+                if 0 <= jump_to[0] < len_x and 0 <= jump_to[1] < len_y \
+                        and grid_map[jump_to] != WALL \
+                        and path[jump_to] - path[jump_from] - cheat_length >= save_cutoff:
+                    total += 1
 
     return total
 
@@ -59,6 +59,7 @@ def main():
                 break
 
     print(calculate_cheats(grid_map, path, len_x, len_y, 2, 100))
+    print(calculate_cheats(grid_map, path, len_x, len_y, 20, 100))
 
 
 if __name__ == "__main__":
