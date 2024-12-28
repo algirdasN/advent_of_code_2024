@@ -38,6 +38,24 @@ def main():
 
     print(len(computer_sets))
 
+    computer_sets = set(frozenset(x.split("-")) for x in data)
+    while len(computer_sets) > 1:
+        next_sets = set()
+        for comp_set in computer_sets:
+            common_neighbours = None
+            for comp in comp_set:
+                if common_neighbours is None:
+                    common_neighbours = set(graph[comp])
+                else:
+                    common_neighbours &= set(graph[comp])
+
+            for neighbour in common_neighbours:
+                next_sets.add(frozenset(comp_set | {neighbour}))
+
+        computer_sets = next_sets
+
+    print(",".join(sorted(list(computer_sets.pop()))))
+
 
 if __name__ == "__main__":
     main()
