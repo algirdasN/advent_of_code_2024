@@ -32,11 +32,11 @@ def main():
         if c2[0] == "t":
             t_computers.add(c2)
 
-    computer_sets = set()
-    for comp in t_computers:
-        computer_sets |= check_loop(graph, [], comp)
+    t_computer_sets = set()
+    for t_comp in t_computers:
+        t_computer_sets |= check_loop(graph, [], t_comp)
 
-    print(len(computer_sets))
+    print(len(t_computer_sets))
 
     computer_sets = set(frozenset(x.split("-")) for x in data)
     while len(computer_sets) > 1:
