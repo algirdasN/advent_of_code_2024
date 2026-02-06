@@ -1,16 +1,11 @@
 import re
 
-import sympy as sp
-from sympy import Eq
-
 PATTERN = re.compile("X[+=](\d+), Y[+=](\d+)")
 
 
 def main():
     with open("data/13.txt") as file:
         games = file.read().split("\n\n")
-
-    count_a, count_b = sp.Symbol("count_a", integer=True), sp.Symbol("count_b", integer=True)
 
     total_simple = 0
     total_complex = 0
@@ -20,23 +15,27 @@ def main():
         bx, by = (int(x) for x in PATTERN.search(b).groups())
         prize_x, prize_y = (int(x) for x in PATTERN.search(prize).groups())
 
-        equations = [
-            Eq(ax * count_a + bx * count_b, prize_x),
-            Eq(ay * count_a + by * count_b, prize_y)
-        ]
+        denom = ax * by - ay * bx
 
-        solution = sp.solve(equations, count_a, count_b)
-        if solution:
-            total_simple += 3 * solution[count_a] + solution[count_b]
+        if denom != 0:
+            num_a = prize_x * by - prize_y * bx
+            num_b = ax * prize_y - ay * prize_x
 
-        equations = [
-            Eq(ax * count_a + bx * count_b, prize_x + 10000000000000),
-            Eq(ay * count_a + by * count_b, prize_y + 10000000000000)
-        ]
+            if num_a % denom == 0 and num_b % denom == 0:
+                a = num_a // denom
+                b = num_b // denom
+                total_simple += 3 * a + b
 
-        solution = sp.solve(equations, count_a, count_b)
-        if solution:
-            total_complex += 3 * solution[count_a] + solution[count_b]
+            prize_x += 10000000000000
+            prize_y += 10000000000000
+
+            num_a = prize_x * by - prize_y * bx
+            num_b = ax * prize_y - ay * prize_x
+
+            if num_a % denom == 0 and num_b % denom == 0:
+                a = num_a // denom
+                b = num_b // denom
+                total_complex += 3 * a + b
 
     print(total_simple)
     print(total_complex)
