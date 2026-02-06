@@ -1,5 +1,8 @@
 import re
 
+import sympy as sp
+from sympy import Eq
+
 PATTERN = re.compile("X[+=](\d+), Y[+=](\d+)")
 
 
@@ -7,37 +10,36 @@ def main():
     with open("data/13.txt") as file:
         games = file.read().split("\n\n")
 
-    cost_a = 3
-    cost_b = 1
+    count_a, count_b = sp.Symbol("count_a", integer=True), sp.Symbol("count_b", integer=True)
 
-    total = 0
+    total_simple = 0
+    total_complex = 0
     for game in games:
         a, b, prize = game.split("\n")
         ax, ay = (int(x) for x in PATTERN.search(a).groups())
         bx, by = (int(x) for x in PATTERN.search(b).groups())
         prize_x, prize_y = (int(x) for x in PATTERN.search(prize).groups())
 
-        count_a = 0
-        count_b = min(prize_x // bx, prize_y // by)
-        temp_x = count_b * bx
-        temp_y = count_b * by
+        equations = [
+            Eq(ax * count_a + bx * count_b, prize_x),
+            Eq(ay * count_a + by * count_b, prize_y)
+        ]
 
-        while temp_x != prize_x or temp_y != prize_y:
-            if count_b == 0:
-                break
+        solution = sp.solve(equations, count_a, count_b)
+        if solution:
+            total_simple += 3 * solution[count_a] + solution[count_b]
 
-            if temp_x > prize_x or temp_y > prize_y:
-                count_b -= 1
-                temp_x -= bx
-                temp_y -= by
-            else:
-                count_a += 1
-                temp_x += ax
-                temp_y += ay
-        else:
-            total += count_a * cost_a + count_b * cost_b
+        equations = [
+            Eq(ax * count_a + bx * count_b, prize_x + 10000000000000),
+            Eq(ay * count_a + by * count_b, prize_y + 10000000000000)
+        ]
 
-    print(total)
+        solution = sp.solve(equations, count_a, count_b)
+        if solution:
+            total_complex += 3 * solution[count_a] + solution[count_b]
+
+    print(total_simple)
+    print(total_complex)
 
 
 if __name__ == "__main__":
