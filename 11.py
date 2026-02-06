@@ -1,45 +1,36 @@
-from collections import deque
-from itertools import count
+from collections import defaultdict
+
+
+def walk(mappings, stone, rem_moves):
+    if rem_moves == 0:
+        return 1
+
+    if stone in mappings and rem_moves in mappings[stone]:
+        return mappings[stone][rem_moves]
+
+    num_str = str(stone)
+    if len(num_str) % 2 == 0:
+        index = len(num_str) // 2
+        new1 = int(num_str[:index])
+        new2 = int(num_str[index:])
+        total = walk(mappings, new1, rem_moves - 1) + walk(mappings, new2, rem_moves - 1)
+    else:
+        new = stone * 2024 if stone else 1
+        total = walk(mappings, new, rem_moves - 1)
+
+    mappings[stone][rem_moves] = total
+
+    return total
 
 
 def main():
     with open("data/11.txt") as file:
-        stones = deque((int(x), 0) for x in file.read().split())
+        stones = [int(x) for x in file.read().split()]
 
-    max_moves = 25
-    total = 0
-    mapping = {}
-    while stones:
-        (orig_number, move) = stones.pop()
+    mappings = defaultdict(dict)
 
-        if orig_number in mapping:
-            (new1, new2, i) = mapping[orig_number]
-            if move + i < max_moves:
-                stones.append((new1, move + i))
-                stones.append((new2, move + i))
-            else:
-                total += 2 if move + i == max_moves else 1
-            continue
-
-        number = orig_number
-        for i in count(1):
-            if move + i > max_moves:
-                total += 1
-                break
-
-            num_str = str(number)
-            if len(num_str) % 2 == 0:
-                index = len(num_str) // 2
-                new1 = int(num_str[:index])
-                new2 = int(num_str[index:])
-                mapping[orig_number] = (new1, new2, i)
-                stones.append((new1, move + i))
-                stones.append((new2, move + i))
-                break
-
-            number = number * 2024 if number else 1
-
-    print(total)
+    print(sum(walk(mappings, x, 25) for x in stones))
+    print(sum(walk(mappings, x, 75) for x in stones))
 
 
 if __name__ == "__main__":
