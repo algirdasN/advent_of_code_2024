@@ -1,25 +1,17 @@
 import re
-from itertools import count
 
 PATTERN = re.compile("p=(\d+),(\d+) v=(-?\d+),(-?\d+)")
 
 
-def draw_grid(robots, max_x, max_y):
-    for i in range(max_x):
-        row = ""
-        for j in range(max_y):
-            row += "#" if (i, j) in robots else "."
-        print(row)
-
-
 def check_tree(robots, max_x, max_y, max_stragglers):
+    stragglers = 0
     for r in robots:
         if not check_neighbors(robots, r, max_x, max_y):
-            max_stragglers -= 1
-            if max_stragglers == 0:
-                return False
+            stragglers += 1
+            if stragglers > max_stragglers:
+                break
 
-    return True
+    return stragglers
 
 
 def check_neighbors(robots, robot, max_x, max_y):
@@ -60,19 +52,22 @@ def main():
 
     print(q1 * q2 * q3 * q4)
 
-    max_stragglers = 200
+    min_stragglers = len(robots)
+    min_second = 0
 
-    for i in count(1):
+    for i in range(1, max_x * max_y):
         positions = set()
         for px, py, vx, vy in robots:
             x = (px + vx * i) % max_x
             y = (py + vy * i) % max_y
             positions.add((x, y))
 
-        if check_tree(positions, max_x, max_y, max_stragglers):
-            draw_grid(positions, max_x, max_y)
-            print(i)
-            break
+        stragglers = check_tree(positions, max_x, max_y, min_stragglers)
+        if stragglers < min_stragglers:
+            min_stragglers = stragglers
+            min_second = i
+
+    print(min_second)
 
 
 if __name__ == "__main__":
