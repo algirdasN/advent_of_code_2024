@@ -1,4 +1,19 @@
-import re
+def solve_pattern(towels, design_map, design):
+    if design == "":
+        return 1
+
+    if design in design_map:
+        return design_map[design]
+
+    total = 0
+
+    for t in towels:
+        if design.startswith(t):
+            total += solve_pattern(towels, design_map, design[len(t):])
+
+    design_map[design] = total
+
+    return total
 
 
 def main():
@@ -8,17 +23,16 @@ def main():
     towels = data[0].split(", ")
     designs = data[1].split()
 
-    basic_towels = []
-    for t in towels:
-        for i in range(len(t)):
-            if t[:i] in towels and t[i:] in towels:
-                break
-        else:
-            basic_towels.append(t)
+    design_map = {}
+    possible = 0
+    combinations = 0
+    for d in designs:
+        count = solve_pattern(towels, design_map, d)
+        possible += count > 0
+        combinations += count
 
-    pattern = re.compile("^(" + "|".join(basic_towels) + ")+$")
-
-    print(sum(pattern.fullmatch(x) is not None for x in designs))
+    print(possible)
+    print(combinations)
 
 
 if __name__ == "__main__":
