@@ -74,7 +74,7 @@ def solve_numpad(code):
 
 def solve_dirpad(mapping, path, depth):
     if depth == 0:
-        return 1
+        return len(path)
 
     curr = DIRPAD["A"]
     total = 0
@@ -98,7 +98,7 @@ def solve_dirpad(mapping, path, depth):
 def solve_code(mapping, code, robot_pads):
     paths = solve_numpad(code)
 
-    return int(code[:-1]) * min(solve_dirpad(mapping, p, robot_pads + 1) for p in paths)
+    return int(code[:-1]) * min(solve_dirpad(mapping, p, robot_pads) for p in paths)
 
 
 def main():
