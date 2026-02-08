@@ -1,3 +1,5 @@
+from functools import cache
+
 DIRECTIONS = {
     (-1, 0): "^",
     (0, -1): "<",
@@ -28,6 +30,7 @@ DIRPAD = {
 }
 
 
+@cache
 def valid_paths(start, end, exclude):
     paths = []
     x_diff = end[0] - start[0]
