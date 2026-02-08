@@ -55,12 +55,12 @@ def valid_paths(start, end, exclude):
     return paths
 
 
-def solve_pad(pad, code, exclude_key):
-    curr = pad["A"]
+def solve_numpad(code):
+    curr = NUMPAD["A"]
     paths = []
     for char in code:
-        nxt = pad[char]
-        nxt_paths = valid_paths(curr, nxt, exclude_key)
+        nxt = NUMPAD[char]
+        nxt_paths = valid_paths(curr, nxt, (3, 0))
         if not paths:
             paths = [p + "A" for p in nxt_paths]
         elif not nxt_paths:
@@ -72,19 +72,43 @@ def solve_pad(pad, code, exclude_key):
     return paths
 
 
-def solve_code(code):
-    paths = solve_pad(NUMPAD, code, (3, 0))
-    for i in range(2):
-        paths = [p for path in paths for p in solve_pad(DIRPAD, path, (0, 0))]
+def solve_dirpad(mapping, path, depth):
+    if depth == 0:
+        return 1
 
-    return int(code[:-1]) * len(min(paths, key=len))
+    curr = DIRPAD["A"]
+    total = 0
+    for char in path:
+        nxt = DIRPAD[char]
+        if curr == nxt:
+            total += 1
+            continue
+
+        key = (char, curr, depth)
+        if key not in mapping:
+            nxt_paths = valid_paths(curr, nxt, (0, 0))
+            mapping[key] = min(solve_dirpad(mapping, p + "A", depth - 1) for p in nxt_paths)
+
+        total += mapping[key]
+        curr = nxt
+
+    return total
+
+
+def solve_code(mapping, code, robot_pads):
+    paths = solve_numpad(code)
+
+    return int(code[:-1]) * min(solve_dirpad(mapping, p, robot_pads + 1) for p in paths)
 
 
 def main():
     with open("data/21.txt") as file:
         codes = file.read().split("\n")
 
-    print(sum(solve_code(c) for c in codes))
+    mapping = {}
+
+    print(sum(solve_code(mapping, c, 2) for c in codes))
+    print(sum(solve_code(mapping, c, 25) for c in codes))
 
 
 if __name__ == "__main__":
