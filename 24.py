@@ -1,6 +1,29 @@
 from collections import deque
 
 
+def validate_half_sum_or_carry(gate_map, value, swapped):
+    xor_gate_w_output = [k for k, v in gate_map.items() if {"XOR", value} <= k]
+    if len(xor_gate_w_output) != 1:
+        swapped.add(value)
+        return
+
+    next_output = gate_map[xor_gate_w_output[0]]
+    if not next_output.startswith("z"):
+        swapped.add(next_output)
+        return
+
+    and_gate_w_output = [k for k, v in gate_map.items() if {"AND", value} <= k]
+    if len(and_gate_w_output) != 1:
+        swapped.add(value)
+        return
+
+    next_output = gate_map[and_gate_w_output[0]]
+    or_gate_w_output = [k for k, v in gate_map.items() if {"OR", next_output} <= k]
+    if len(or_gate_w_output) != 1:
+        swapped.add(next_output)
+        return
+
+
 def main():
     with open("data/24.txt") as file:
         init, gates = file.read().split("\n\n")
@@ -39,61 +62,53 @@ def main():
     print(total)
 
     gate_map = {frozenset(x[:3]): x[3] for x in gate_expressions}
+    swapped = set()
 
-    swapped = []
-    i = 1
-    carry = gate_map[frozenset(("x00", "y00", "AND"))]
-    while i < 45:
-        x = f"x{i:02}"
-        y = f"y{i:02}"
-        z = f"z{i:02}"
+    for key, value in gate_map.items():
+        has_z_output = value.startswith("z")
 
-        int_sum_key = frozenset((x, y, "XOR"))
-        int_carry_key = frozenset((x, y, "AND"))
+        if "AND" in key:
+            has_xy_inputs = all(map(lambda x: x == "AND" or x.startswith("x") or x.startswith("y"), key))
+            if has_xy_inputs & has_z_output:
+                swapped.add(value)
+                continue
 
-        int_sum = gate_map[int_sum_key]
-        if int_sum == z:
-            test_set = {carry, "XOR"}
-            z_key = [x for x in gate_map if test_set <= x][0]
-            actual = next(iter(z_key - test_set))
-            gate_map[z_key] = int_sum
-            gate_map[int_sum_key] = actual
-            swapped += [int_sum, actual]
-            continue
+            if "x00" in key:
+                validate_half_sum_or_carry(gate_map, value, swapped)
+                continue
 
-        z_key = frozenset((carry, int_sum, "XOR"))
-        int_carry2_key = frozenset((carry, int_sum, "AND"))
+            or_gate_w_output = [k for k, v in gate_map.items() if {"OR", value} <= k]
+            if len(or_gate_w_output) != 1:
+                swapped.add(value)
+                continue
 
-        int_carry = gate_map[int_carry_key]  #
-        if int_carry == z:
-            test_set = {gate_map[int_carry2_key], "OR"}
-            carry_key = [x for x in gate_map if test_set <= x][0]
-            actual = next(iter(carry_key - test_set))
-            gate_map[z_key] = int_carry
-            gate_map[int_carry_key] = actual
-            swapped += [int_carry, actual]
-            continue
+        if "XOR" in key:
+            has_xy_inputs = all(map(lambda x: x == "XOR" or x.startswith("x") or x.startswith("y"), key))
 
-        if z_key not in gate_map:
-            gate_map[int_carry_key] = int_sum
-            gate_map[int_sum_key] = int_carry
-            swapped += [int_carry, int_sum]
-            continue
+            if "x00" in key:
+                if value != "z00":
+                    swapped.add(value)
+                continue
 
-        if gate_map[z_key] != z:
-            actual_key = [k for k, v in gate_map.items() if v == z][0]
-            actual = gate_map[z_key]
-            gate_map[actual_key] = actual
-            gate_map[z_key] = z
-            swapped += [actual, z]
-            continue
+            if not (has_xy_inputs ^ has_z_output):
+                swapped.add(value)
+                continue
 
-        int_carry2 = gate_map[int_carry2_key]
-        carry = gate_map[frozenset((int_carry, int_carry2, "OR"))]
+            if has_z_output:
+                continue
 
-        i += 1
+            validate_half_sum_or_carry(gate_map, value, swapped)
+
+        if "OR" in key:
+            if has_z_output:
+                if value != "z45":
+                    swapped.add(value)
+                continue
+
+            validate_half_sum_or_carry(gate_map, value, swapped)
 
     print(",".join(sorted(swapped)))
+
 
 if __name__ == "__main__":
     main()
